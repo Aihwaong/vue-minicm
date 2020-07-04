@@ -54,11 +54,20 @@ export default {
                 if (valid) {
                     this.postKeyValueRequest("/login", this.loginInfo).then(
                         response => {
-                            console.log(response);
                             // 保存用户对象
                             window.sessionStorage.setItem(
                                 "user",
                                 JSON.stringify(response.object)
+                            );
+                            // 保存token
+                            this.$store.commit(
+                                "updateToken",
+                                response.object.token
+                            );
+                            // 保存token到session
+                            window.sessionStorage.setItem(
+                                "token",
+                                response.object.token
                             );
 
                             this.$router.replace("/index");

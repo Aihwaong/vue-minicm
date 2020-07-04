@@ -89,9 +89,9 @@ export default {
                         cancelButtonText: "取消",
                         type: "warning"
                     }).then(() => {
-                        this.getRequest("/logout");
-                        window.sessionStorage.removeItem("user");
-                        //this.$store.commit("initRoutes", []);
+                        // 清除token & 清空sessionStorage
+                        this.$store.commit('clearToken');
+                        sessionStorage.clear();
                         this.$router.replace("/");
                     });
                     break;

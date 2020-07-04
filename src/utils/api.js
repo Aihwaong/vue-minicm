@@ -1,6 +1,19 @@
 import axios from "axios"
 import { Message } from 'element-ui';
 import router from "../router/index";
+import store from "../store/index";
+
+// http request 拦截器
+axios.interceptors.request.use(config => {
+    if (store.state.token) {
+        config.headers.Authorization = store.state.token;
+    }
+    return config;
+}, err => {
+    return Promise.reject(err);
+});
+
+
 // 拦截器
 axios.interceptors.response.use(respData => {
     if (respData.status && respData.status == 200 && respData.data.status == 500) {
@@ -10,7 +23,7 @@ axios.interceptors.response.use(respData => {
     if (respData.data.message) {
         Message.success({ message: respData.data.message })
     }
-    
+
     return respData.data;
 }, error => {
     if (error.response.status == 504 || error.response.status == 404) {
@@ -19,6 +32,8 @@ axios.interceptors.response.use(respData => {
         Message.error({ message: '权限不足' })
     } else if (error.response.status == 401) {
         Message.error({ message: error.response.data.message })
+        store.commit('clearToken');
+        sessionStorage.clear();
         router.replace('/');
     } else {
         if (error.response.data.message) {

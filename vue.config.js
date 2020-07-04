@@ -14,5 +14,3 @@ module.exports = {
         }
     }
 };
-
-// console.log(777);

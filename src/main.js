@@ -31,6 +31,7 @@ router.beforeEach((to, from, next) => {
     if (to.path == '/') {
         next();
     } else {
+        store.commit('updateToken', sessionStorage.getItem("token"));
         // 判断用户登录
         if (window.sessionStorage.getItem("user")) {
             initMenu(router, store);
