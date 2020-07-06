@@ -137,6 +137,7 @@ export default {
             this.postRequest("/system/menu/getMenuList").then(response => {
                 if (response) {
                     this.data = response;
+                    this.formInit();
                 }
             });
         },
@@ -157,7 +158,6 @@ export default {
             this.dialogVisible = true;
         },
         parentChange(data) {
-            console.log(data);
         },
         // 菜单新增
         add(data) {
@@ -195,39 +195,54 @@ export default {
         updateDialog(data) {
             this.getRequest("/system/menu/" + data.id).then(response => {
                 if (response) {
-                    this.formInit(response);
                     this.form = response;
                 }
             });
             this.dialogVisible = true;
         },
         del(data) {
-            this.$confirm("确定要删除该菜单吗？", "温馨提示", {
+            let message = data.parentid == 1 ? "如有下级菜单，将一同删除，您确定删除吗？" : "确定要删除该菜单吗？";
+            this.$confirm(message, "温馨提示", {
                 confirmButtonText: "确定",
                 cancelButtonText: "取消",
                 type: "warning",
                 center: true
             })
-            .then(() => {
-                this.deleteRequest("/system/menu/" + data.id).then(
-                    response => {
-                        if (response) {
-                            this.initMenuData();
+                .then(() => {
+                    this.deleteRequest("/system/menu/" + data.id).then(
+                        response => {
+                            if (response) {
+                                this.initMenuData();
+                            }
                         }
-                    }
-                );
-            })
-            .catch(() => {});
+                    );
+                })
+                .catch(() => {});
         },
         // 初始化下拉选项数据
-        formInit(data) {
-            if (data.id != "") {
-                let parent = [{ name: "顶级菜单", parentid: 1 }];
-                parent.push({ name: data.name, parentid: data.id });
-                this.form.parentid = "";
-                this.parent = parent;
-            } else {
-            }
+        formInit() {
+            let parent = [];
+            parent.push({ name: "顶级菜单", parentid: 1 });
+            this.data.forEach(element => {
+                if (element.parentid == 1) {
+                    parent.push({ name: element.name, parentid: element.id });
+                }
+            });
+            this.parent = parent;
+            // if (data.id != "") {
+            //     let parent = [];
+            //     alert(data.parentid == 1)
+            //     if (data.parentid == 1) {
+            //         parent.push({ name: "顶级菜单", parentid: 1 });
+
+            //     } else {
+            //         parent.push({ name: data.name, parentid: data.id });
+
+            //     }
+            //     this.form.parentid = "";
+            //     this.parent = parent;
+            // } else {
+            // }
         },
         // 移除字段验证
         resetForm() {

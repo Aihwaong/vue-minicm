@@ -15,7 +15,7 @@
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item icon="el-icon-s-custom" command="persson">个人中心</el-dropdown-item>
                         <el-dropdown-item icon="el-icon-s-help" command="setting">设置</el-dropdown-item>
-                        <el-dropdown-item divided icon="el-icon-turn-off" command="logout">Login Out</el-dropdown-item>
+                        <el-dropdown-item divided icon="el-icon-turn-off" command="logout">退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </el-header>
@@ -89,8 +89,9 @@ export default {
                         cancelButtonText: "取消",
                         type: "warning"
                     }).then(() => {
-                        // 清除token & 清空sessionStorage
+                        // 清除token & roles 清空sessionStorage
                         this.$store.commit('clearToken');
+                        this.$store.commit('clearRoles');
                         sessionStorage.clear();
                         this.$router.replace("/");
                     });

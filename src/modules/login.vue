@@ -20,7 +20,18 @@
                     placeholder="请输入密码"
                 ></el-input>
             </el-form-item>
-            <el-checkbox size="normal" class="loginRemember" v-model="checked"></el-checkbox>
+             <el-form-item prop="verifyCode">
+                <el-input
+                    size="normal"
+                    type="text"
+                    v-model="loginInfo.verifyCode"
+                    auto-complete="off"
+                    placeholder="请输入密验证码"
+                    style="width:240px;margin-right: 10px;"
+                ></el-input>
+                 <img :src="verify" @click="refreshVerifyCode" alt="" style="cursor: pointer">
+            </el-form-item>
+            <!-- <el-checkbox size="normal" class="loginRemember" v-model="checked"></el-checkbox> -->
             <el-button size="normal" type="primary" style="width: 100%;" @click="login">登录</el-button>
         </el-form>
     </div>
@@ -31,8 +42,10 @@ export default {
     data: () => ({
         loginInfo: {
             account: "admin",
-            password: "123"
+            password: "123",
+            verifyCode: "",
         },
+        verify:"/verify?time" + +new Date(), 
         checked: true,
         rules: {
             account: [
@@ -40,13 +53,16 @@ export default {
             ],
             password: [
                 { required: true, message: "请输入密码", trigger: "blur" }
+            ],
+            verifyCode: [
+                { required: true, message: "请输入验证码", trigger: "blur" }
             ]
         }
     }),
     computed: {},
     methods: {
-        updateVerifyCode() {
-            this.vcUrl = "/verifyCode?time=" + new Date();
+        refreshVerifyCode() {
+            this.verify = "/verify?time" + +new Date();
         },
         // 登录方法
         login() {
@@ -54,10 +70,11 @@ export default {
                 if (valid) {
                     this.postKeyValueRequest("/login", this.loginInfo).then(
                         response => {
+                            console.log(response);
                             // 保存用户对象
                             window.sessionStorage.setItem(
                                 "user",
-                                JSON.stringify(response.object)
+                                JSON.stringify(response.object.data)
                             );
                             // 保存token
                             this.$store.commit(

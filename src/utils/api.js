@@ -13,8 +13,7 @@ axios.interceptors.request.use(config => {
     return Promise.reject(err);
 });
 
-
-// 拦截器
+// http response 拦截器
 axios.interceptors.response.use(respData => {
     if (respData.status && respData.status == 200 && respData.data.status == 500) {
         Message.error({ message: respData.data.message });
@@ -33,6 +32,7 @@ axios.interceptors.response.use(respData => {
     } else if (error.response.status == 401) {
         Message.error({ message: error.response.data.message })
         store.commit('clearToken');
+        store.commit('clearRoles');
         sessionStorage.clear();
         router.replace('/');
     } else {

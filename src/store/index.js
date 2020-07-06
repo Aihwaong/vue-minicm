@@ -22,6 +22,9 @@ export default new Vuex.Store({
         clearToken(state) {
             state.token = '';
         },
+        clearRoles(state) {
+            state.routes = '';
+        },
     },
     actions: {
 
