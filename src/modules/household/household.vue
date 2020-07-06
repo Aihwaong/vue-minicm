@@ -54,11 +54,14 @@
         <el-table class="table" :data="tableData" @selection-change="selectionChange" size="small">
             <el-table-column type="selection" width="45"></el-table-column>
             <el-table-column fixed prop="realName" label="业主姓名" width="100"></el-table-column>
-            <el-table-column prop="identityDocument" label="身份证" width="160"></el-table-column>
+            <el-table-column prop="sex" label="性别" width="80" :formatter="formatSex"></el-table-column>
+            <el-table-column prop="age" label="年龄" width="80"></el-table-column>
+            <el-table-column prop="nativePlace" label="籍贯" width="120"></el-table-column>
             <el-table-column prop="telephone" label="联系方式" width="120"></el-table-column>
+            <el-table-column prop="identityDocument" label="身份证" width="160"></el-table-column>
             <el-table-column prop="nationName" label="民族" width="100"></el-table-column>
             <el-table-column prop="status" label="状态" width="100" :formatter="formatStatus"></el-table-column>
-            <el-table-column prop="createTime" label="创建时间" width="180" :formatter="renderTime"></el-table-column>
+            <el-table-column prop="createTime" label="登记时间" width="180" :formatter="renderTime"></el-table-column>
             <el-table-column fixed="right" label="操作" width="285">
                 <template slot-scope="scope">
                     <el-button
@@ -119,6 +122,9 @@
                 <el-form-item label="身份证" prop="identityDocument">
                     <el-input v-model="form.identityDocument" style="width:203px"></el-input>
                 </el-form-item>
+                <el-form-item label="籍贯" prop="nativePlace">
+                    <el-input v-model="form.nativePlace" style="width:203px"></el-input>
+                </el-form-item>
                 <el-form-item label="民族" prop="nation">
                     <el-select v-model="form.nation" placeholder="请选择民族" size="small">
                         <el-option
@@ -127,6 +133,12 @@
                             :label="item.name"
                             :value="item.id"
                         ></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="性别" prop="realName">
+                    <el-select v-model="form.sex" placeholder="请选择状态">
+                        <el-option label="男" value="1"></el-option>
+                        <el-option label="女" value="2"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="状态" prop="status">
@@ -143,7 +155,13 @@
         </el-dialog>
         <!-- 房屋登记 -->
         <el-dialog title="房屋登记" :visible.sync="checkInDialogVisible">
-            <el-button type="primary" icon="el-icon-circle-plus-outline" plain @click="checkInAddDialog()" size="small">信息登记</el-button>
+            <el-button
+                type="primary"
+                icon="el-icon-circle-plus-outline"
+                plain
+                @click="checkInAddDialog()"
+                size="small"
+            >信息登记</el-button>
             <el-table :data="checkInData" style="width: 100%" max-height="350">
                 <el-table-column prop="ridgepoleName" label="楼栋"></el-table-column>
                 <el-table-column prop="unitName" label="单元"></el-table-column>
@@ -236,6 +254,9 @@ export default {
                 telephone: "",
                 identityDocument: "442111199609221215",
                 nation: "",
+                nativePlace: "",
+                sex: "1",
+                age:"",
                 status: "1"
             },
             rules: {
@@ -402,6 +423,7 @@ export default {
         add() {
             this.$refs.form.validate(valid => {
                 if (valid) {
+                    this.form.age = this.renderAge(this.form.identityDocument);
                     if (this.form.id == "") {
                         this.postRequest(this.REQUEST_URL, this.form).then(
                             resp => {
@@ -456,14 +478,60 @@ export default {
             }
         },
         renderTime(row, column, cellValue, index) {
-            var date = new Date(row.createTime).toJSON();
+            let date = new Date(row.createTime).toJSON();
             return new Date(+new Date(date) + 8 * 3600 * 1000)
                 .toISOString()
                 .replace(/T/g, " ")
                 .replace(/\.[\d]{3}Z/, "");
         },
+        renderAge(identityCard) {
+            let len = (identityCard + "").length;
+            if (len == 0) {
+                return 0;
+            } else {
+                if (len != 15 && len != 18) {
+                    //身份证号码只能为15位或18位其它不合法
+                    return 0;
+                }
+            }
+            let strBirthday = "";
+            if (len == 18) {
+                //处理18位的身份证号码从号码中得到生日和性别代码
+                strBirthday =
+                    identityCard.substr(6, 4) +
+                    "/" +
+                    identityCard.substr(10, 2) +
+                    "/" +
+                    identityCard.substr(12, 2);
+            }
+            if (len == 15) {
+                strBirthday =
+                    "19" +
+                    identityCard.substr(6, 2) +
+                    "/" +
+                    identityCard.substr(8, 2) +
+                    "/" +
+                    identityCard.substr(10, 2);
+            }
+            //时间字符串里，必须是“/”
+            let birthDate = new Date(strBirthday);
+            let nowDateTime = new Date();
+            let age = nowDateTime.getFullYear() - birthDate.getFullYear();
+            //再考虑月、天的因素;.getMonth()获取的是从0开始的，这里进行比较，不需要加1
+            if (
+                nowDateTime.getMonth() < birthDate.getMonth() ||
+                (nowDateTime.getMonth() == birthDate.getMonth() &&
+                    nowDateTime.getDate() < birthDate.getDate())
+            ) {
+                age--;
+            }
+            return age;
+        },
         formatStatus(row, column, cellValue, index) {
             return row.status == 1 ? "在住" : "非在住";
+        },
+        formatSex(row, column, cellValue, index) {
+            return row.status == 1 ? "男" : "女";
         },
 
         // -------------- 分页 --------------
@@ -481,13 +549,13 @@ export default {
 
         // -------------- 入住登记 --------------
         initcheckInData() {
-            this.getRequest("/household/house/getCheckInHouse/" + this.cheInForm.householdId).then(
-                response => {
-                    if (response) {
-                        this.checkInData = response;
-                    }
+            this.getRequest(
+                "/household/house/getCheckInHouse/" + this.cheInForm.householdId
+            ).then(response => {
+                if (response) {
+                    this.checkInData = response;
                 }
-            );
+            });
         },
         checkInDialog(row) {
             this.cheInForm.householdId = row.id;
@@ -515,6 +583,7 @@ export default {
                             element.storey + "-楼-" + element.roomNumber;
                     });
                     this.houseData = response;
+                    this.cheInForm.houseId = "";
                 }
             });
         },
@@ -528,12 +597,14 @@ export default {
         },
         addCheckIn() {
             console.log(this.cheInForm);
-            this.postRequest("/household/checkIn/", this.cheInForm).then(response => {
-                if (response) {
-                    this.checkInFormDialogVisible = false;
-                    this.initcheckInData();
+            this.postRequest("/household/checkIn/", this.cheInForm).then(
+                response => {
+                    if (response) {
+                        this.checkInFormDialogVisible = false;
+                        this.initcheckInData();
+                    }
                 }
-            });
+            );
         },
         onConfirm(data) {
             console.log(data);

@@ -45,7 +45,7 @@
                             <el-breadcrumb-item>{{this.$router.currentRoute.name}}</el-breadcrumb-item>
                         </el-breadcrumb>
                         
-                        <div v-if="this.$router.currentRoute.path=='/index'">Main</div>
+                        <div v-if="this.$router.currentRoute.path=='/index'">（规划中）</div>
                         <router-view />
                     </el-main>
                     <!-- <el-footer class="footer">

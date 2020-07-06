@@ -17,7 +17,7 @@
                     prefix-icon="el-icon-search"
                     v-model="keyword"
                     size="small"
-                    style="width: 350px;margin-right: 10px"
+                    style="width: 200px;margin-right: 10px"
                 ></el-input>
                 <el-button icon="el-icon-search" type="primary" @click="initTableData()" size="small" plain>搜索</el-button>
             </div>
