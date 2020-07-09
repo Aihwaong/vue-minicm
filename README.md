@@ -12,6 +12,8 @@ SpringSecurity
 
 JWT
 
+Redis
+
 Swagger2
 
 Vue
